@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>치수기입 마스터</title>
+<style>
+  :root{
+    --bg:#0f1319; --panel:#171c25; --panel2:#1f2531; --line:#2c3442;
+    --text:#e8ecf3; --sub:#8a94a6; --accent:#22c55e; --accent2:#38bdf8;
+    --good:#34d399; --bad:#f87171; --draw:#dfe6f0; --dim:#f59e0b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);
+    font-family:"Pretendard","Segoe UI",-apple-system,sans-serif;
+    min-height:100vh;padding:20px 14px 60px;line-height:1.6;}
+  .wrap{max-width:1040px;margin:0 auto;}
+  header{margin-bottom:18px;}
+  h1{font-size:23px;margin:0 0 4px;font-weight:800;}
+  h1 span{color:var(--accent);}
+  .sub{color:var(--sub);font-size:13px;}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;}
+  .hidden{display:none !important;}
+
+  .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:18px;
+    cursor:pointer;transition:.15s;text-align:left;color:var(--text);font-family:inherit;}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .card .ico{font-size:30px;}
+  .card h3{margin:8px 0 4px;font-size:16px;}
+  .card p{margin:0;color:var(--sub);font-size:12.5px;}
+  .bar{height:6px;background:#0c0f14;border-radius:99px;margin-top:12px;overflow:hidden;}
+  .bar i{display:block;height:100%;background:var(--good);width:0;transition:width .4s;}
+  .bar-t{font-size:11px;color:var(--sub);margin-top:5px;}
+
+  .topnav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .btn{border:none;padding:9px 15px;border-radius:9px;font-size:13px;font-weight:700;
+    cursor:pointer;font-family:inherit;transition:.15s;}
+  .btn-p{background:var(--accent);color:#04240f;}
+  .btn-p:hover{filter:brightness(1.1);}
+  .btn-g{background:var(--panel2);color:var(--text);border:1px solid var(--line);}
+  .btn-g:hover{border-color:var(--sub);}
+  .btn-s{background:var(--accent2);color:#04222e;}
+  .spacer{flex:1;}
+  .tag{font-size:11.5px;color:var(--sub);background:var(--panel2);border:1px solid var(--line);
+    padding:4px 10px;border-radius:99px;}
+
+  .learn{display:grid;gap:12px;}
+  .lcard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;}
+  .lcard h4{margin:0 0 8px;font-size:15px;color:var(--accent);}
+  .lcard p{margin:0 0 8px;font-size:13.5px;}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px;margin-top:8px;}
+  .kv b{color:var(--accent2);white-space:nowrap;}
+  .note{font-size:12px;color:var(--sub);border-left:3px solid var(--accent);padding-left:10px;margin-top:8px;}
+  .bad-note{font-size:12px;color:#fca5a5;border-left:3px solid var(--bad);padding-left:10px;margin-top:8px;}
+  ul{margin:6px 0 0;padding-left:18px;font-size:13px;}
+  li{margin-bottom:4px;}
+
+  .symgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:10px;}
+  .sym{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 8px;text-align:center;}
+  .sym .big{font-size:26px;font-weight:800;color:var(--dim);font-family:"Times New Roman",serif;}
+  .sym .nm{font-size:12.5px;font-weight:700;margin-top:4px;}
+  .sym .dt{font-size:11px;color:var(--sub);}
+
+  .figbox{background:#141922;border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;text-align:center;}
+  .figbox svg{max-width:100%;height:auto;}
+  .figcap{font-size:11.5px;color:var(--sub);margin-top:6px;}
+
+  .q{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:18px;}
+  .qtext{font-size:16px;font-weight:700;margin-bottom:12px;line-height:1.5;}
+  .opts{display:grid;gap:9px;}
+  .opt{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+    cursor:pointer;font-size:14px;text-align:left;color:var(--text);font-family:inherit;
+    display:flex;align-items:center;gap:10px;transition:.12s;}
+  .opt:hover:not(:disabled){border-color:var(--accent);}
+  .opt .mk{width:24px;height:24px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+  .opt.ok{border-color:var(--good);background:rgba(52,211,153,.12);}
+  .opt.no{border-color:var(--bad);background:rgba(248,113,113,.1);}
+  .opt:disabled{cursor:default;}
+  .fb{margin-top:14px;padding:13px 15px;border-radius:10px;font-size:13.5px;display:none;line-height:1.6;}
+  .fb.ok{display:block;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.35);color:var(--good);}
+  .fb.no{display:block;background:rgba(248,113,113,.09);border:1px solid rgba(248,113,113,.3);color:#fca5a5;}
+  .fb b{color:var(--text);}
+  .prog{height:7px;background:#0c0f14;border-radius:99px;overflow:hidden;margin:10px 0 4px;}
+  .prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .3s;}
+  .qnum{font-size:12px;color:var(--sub);font-weight:700;}
+
+  .result{text-align:center;padding:26px 18px;}
+  .result .big{font-size:52px;}
+  .score-ring{font-size:40px;font-weight:800;color:var(--accent);}
+  .wrongbox{text-align:left;margin-top:18px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:14px;font-size:13px;max-height:280px;overflow-y:auto;}
+  .wrongbox h4{margin:0 0 8px;font-size:13px;color:var(--bad);}
+  .wrongbox div{padding:7px 0;border-bottom:1px solid var(--line);}
+  .wrongbox div:last-child{border-bottom:none;}
+
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:var(--panel2);
+    border:1px solid var(--line);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:700;
+    z-index:999;display:none;box-shadow:0 6px 24px rgba(0,0,0,.4);}
+  .toast.ok{border-color:var(--good);color:var(--good);}
+  .toast.no{border-color:var(--bad);color:#fca5a5;}
+  @media (max-width:600px){ h1{font-size:20px;} .qtext{font-size:15px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>치수기입 <span>마스터</span></h1>
+    <div class="sub">치수 기입 요소 · 치수 보조기호 · 기입 원칙 — 배우고 나서 문제로 확인하세요</div>
+  </header>
+
+  <div id="home">
+    <div class="panel"><div class="home-grid" id="homeGrid"></div></div>
+    <div class="panel">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:15px;font-weight:800;">🏁 종합 점검 (20문항)</div>
+          <div class="sub" style="font-size:12.5px;">세 영역을 섞어 출제합니다. 결과를 선생님께 제출할 수 있어요.</div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-p" onclick="startExam()">종합 점검 시작</button>
+      </div>
+      <div class="bar" style="margin-top:12px;"><i id="examBar"></i></div>
+      <div class="bar-t" id="examTxt">아직 응시하지 않았습니다</div>
+    </div>
+  </div>
+
+  <div id="learnView" class="hidden">
+    <div class="topnav">
+      <button class="btn btn-g" onclick="goHome()">← 홈</button>
+      <div class="tag" id="learnTitle"></div>
+      <div class="spacer"></div>
+      <button class="btn btn-p" onclick="fromLearnToQuiz()">문제 풀기 →</button>
+    </div>
+    <div class="panel"><div class="learn" id="learnBody"></div></div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <button class="btn btn-p" onclick="fromLearnToQuiz()">배웠으니 문제 풀어보기 →</button>
+    </div>
+  </div>
+
+  <div id="quizView" class="hidden">
+    <div class="topnav">
+      <button class="btn btn-g" onclick="goHome()">← 홈</button>
+      <div class="tag" id="quizTitle"></div>
+      <div class="spacer"></div>
+      <div class="tag" id="quizScore">0점</div>
+    </div>
+    <div class="prog"><i id="quizProg"></i></div>
+    <div class="qnum" id="quizCount" style="margin-bottom:10px;"></div>
+    <div class="q" id="quizBody"></div>
+    <div style="text-align:right;margin-top:14px;">
+      <button class="btn btn-p hidden" id="nextBtn">다음 →</button>
+    </div>
+  </div>
+
+  <div id="resultView" class="hidden">
+    <div class="panel result">
+      <div class="big" id="rEmoji">🎉</div>
+      <h2 id="rTitle"></h2>
+      <div class="score-ring" id="rScore"></div>
+      <div class="sub" id="rSub" style="margin-top:6px;"></div>
+      <div id="rWrong"></div>
+      <div style="margin-top:20px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-g" onclick="goHome()">홈으로</button>
+        <button class="btn btn-s" id="retryBtn">다시 풀기</button>
+        <button class="btn btn-p hidden" id="rcSubmitBtn" onclick="rcSubmit()">🧑‍🏫 선생님께 제출</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   치수기입 마스터 — 기초제도 Ⅱ단원(도면의 치수 기입) 기준
+   ========================================================= */
+
+/* ---------- 도면 그림(SVG) ---------- */
+const P='var(--draw)', D='var(--dim)';
+function fig(inner,w,h){
+  return `<svg width="${w||330}" height="${h||150}" viewBox="0 0 ${w||330} ${h||150}">
+    <g fill="none" stroke="${P}" stroke-width="1.8" stroke-linecap="round">${inner}</g></svg>`;
+}
+/* 치수 기입 4요소 설명 그림 */
+function figElements(){
+  return `<svg width="340" height="165" viewBox="0 0 340 165">
+    <!-- 물체 외형선 -->
+    <rect x="60" y="30" width="150" height="60" fill="none" stroke="${P}" stroke-width="2.2"/>
+    <!-- 치수 보조선 -->
+    <line x1="60" y1="92" x2="60" y2="130" stroke="${D}" stroke-width="1.4"/>
+    <line x1="210" y1="92" x2="210" y2="130" stroke="${D}" stroke-width="1.4"/>
+    <!-- 치수선 + 화살표 -->
+    <line x1="60" y1="122" x2="210" y2="122" stroke="${D}" stroke-width="1.4"/>
+    <path d="M60 122 L70 118.5 L70 125.5 Z" fill="${D}"/>
+    <path d="M210 122 L200 118.5 L200 125.5 Z" fill="${D}"/>
+    <text x="128" y="117" fill="${D}" font-size="14" font-weight="700">150</text>
+    <!-- 라벨 -->
+    <text x="222" y="126" fill="#8a94a6" font-size="11">① 치수선</text>
+    <text x="222" y="108" fill="#8a94a6" font-size="11">② 치수 보조선</text>
+    <text x="222" y="144" fill="#8a94a6" font-size="11">③ 화살표</text>
+    <text x="100" y="146" fill="#8a94a6" font-size="11">④ 치수 숫자</text>
+    <line x1="218" y1="122" x2="212" y2="122" stroke="#8a94a6" stroke-width="1"/>
+    <line x1="218" y1="104" x2="212" y2="98" stroke="#8a94a6" stroke-width="1"/>
+  </svg>`;
+}
+/* 치수선 간격 규칙 */
+function figSpacing(){
+  return `<svg width="330" height="160" viewBox="0 0 330 160">
+    <rect x="50" y="20" width="140" height="50" fill="none" stroke="${P}" stroke-width="2.2"/>
+    <line x1="50" y1="72" x2="50" y2="140" stroke="${D}" stroke-width="1.2"/>
+    <line x1="190" y1="72" x2="190" y2="140" stroke="${D}" stroke-width="1.2"/>
+    <line x1="120" y1="72" x2="120" y2="112" stroke="${D}" stroke-width="1.2"/>
+    <line x1="50" y1="95" x2="120" y2="95" stroke="${D}" stroke-width="1.4"/>
+    <path d="M50 95 L59 92 L59 98 Z" fill="${D}"/><path d="M120 95 L111 92 L111 98 Z" fill="${D}"/>
+    <text x="76" y="90" fill="${D}" font-size="13" font-weight="700">70</text>
+    <line x1="50" y1="130" x2="190" y2="130" stroke="${D}" stroke-width="1.4"/>
+    <path d="M50 130 L59 127 L59 133 Z" fill="${D}"/><path d="M190 130 L181 127 L181 133 Z" fill="${D}"/>
+    <text x="110" y="125" fill="${D}" font-size="13" font-weight="700">140</text>
+    <text x="200" y="99" fill="#8a94a6" font-size="10.5">작은 치수를 안쪽에</text>
+    <text x="200" y="134" fill="#8a94a6" font-size="10.5">큰 치수를 바깥쪽에</text>
+  </svg>`;
+}
+/* 보조기호 예시 도형 */
+function figSymbolUse(){
+  return `<svg width="330" height="120" viewBox="0 0 330 120">
+    <circle cx="60" cy="60" r="32" fill="none" stroke="${P}" stroke-width="2.2"/>
+    <line x1="38" y1="38" x2="82" y2="82" stroke="${D}" stroke-width="1.3"/>
+    <text x="86" y="86" fill="${D}" font-size="14" font-weight="700">φ64</text>
+    <path d="M170 92 A40 40 0 0 1 210 52" fill="none" stroke="${P}" stroke-width="2.2"/>
+    <line x1="210" y1="52" x2="240" y2="30" stroke="${D}" stroke-width="1.3"/>
+    <text x="243" y="30" fill="${D}" font-size="14" font-weight="700">R40</text>
+    <text x="150" y="112" fill="#8a94a6" font-size="10.5">지름은 φ, 반지름은 R</text>
+  </svg>`;
+}
+/* 잘못된 치수 기입 예 — 중복 */
+function figDuplicate(){
+  return `<svg width="330" height="150" viewBox="0 0 330 150">
+    <rect x="55" y="25" width="150" height="55" fill="none" stroke="${P}" stroke-width="2.2"/>
+    <line x1="55" y1="82" x2="55" y2="120" stroke="${D}" stroke-width="1.2"/>
+    <line x1="130" y1="82" x2="130" y2="120" stroke="${D}" stroke-width="1.2"/>
+    <line x1="205" y1="82" x2="205" y2="140" stroke="${D}" stroke-width="1.2"/>
+    <line x1="55" y1="100" x2="130" y2="100" stroke="${D}" stroke-width="1.4"/>
+    <text x="82" y="96" fill="${D}" font-size="13" font-weight="700">75</text>
+    <line x1="130" y1="100" x2="205" y2="100" stroke="${D}" stroke-width="1.4"/>
+    <text x="157" y="96" fill="${D}" font-size="13" font-weight="700">75</text>
+    <line x1="55" y1="132" x2="205" y2="132" stroke="#f87171" stroke-width="1.6"/>
+    <text x="120" y="128" fill="#f87171" font-size="13" font-weight="700">150</text>
+    <text x="215" y="136" fill="#f87171" font-size="11">← 중복!</text>
+  </svg>`;
+}
+
+/* ---------- 데이터: 치수 보조기호 ---------- */
+const SYMBOLS = [
+  {s:'φ',  nm:'지름',        dt:'원의 지름 앞에 붙임',        ex:'φ50 = 지름 50mm'},
+  {s:'R',  nm:'반지름',      dt:'원호의 반지름 앞에 붙임',    ex:'R20 = 반지름 20mm'},
+  {s:'□',  nm:'정사각형의 변',dt:'정사각형 한 변 앞에 붙임',  ex:'□30 = 한 변 30mm인 정사각형'},
+  {s:'t',  nm:'두께',        dt:'판의 두께를 나타냄',         ex:'t3 = 두께 3mm'},
+  {s:'C',  nm:'45° 모따기',  dt:'45도로 깎아낸 크기',         ex:'C2 = 45°로 2mm 모따기'},
+  {s:'Sφ', nm:'구의 지름',   dt:'구(공) 모양의 지름',         ex:'Sφ40 = 구의 지름 40mm'},
+  {s:'SR', nm:'구의 반지름', dt:'구(공) 모양의 반지름',       ex:'SR25 = 구의 반지름 25mm'},
+  {s:'( )',nm:'참고 치수',   dt:'참고로만 표시하는 치수',     ex:'(80) = 참고 치수 80mm'},
+  {s:'⌒',  nm:'원호의 길이', dt:'호(arc)의 길이를 나타냄',    ex:'⌒50 = 호의 길이 50mm'}
+];
+
+/* ---------- 배우기 ---------- */
+const LEARN = {
+  elem:{title:'치수 기입의 요소', cards:[
+    {h:'치수 기입에 쓰이는 4가지 요소', html:`
+      <div class="figbox">${figElements()}<div class="figcap">치수선·치수 보조선·화살표·치수 숫자</div></div>
+      <div class="kv">
+        <b>① 치수선</b><span>가는 실선. 치수를 재는 방향으로 긋고 양 끝에 화살표를 붙임</span>
+        <b>② 치수 보조선</b><span>가는 실선. 외형선에서 끌어내며 <b>치수선을 2~3mm 넘게</b> 그림</span>
+        <b>③ 화살표</b><span>치수선의 끝을 나타냄. 한 도면에서는 모양과 크기를 같게</span>
+        <b>④ 치수 숫자</b><span>치수선 <b>중앙 위쪽</b>에 기입. 단위 mm는 쓰지 않음</span>
+      </div>
+      <div class="note">도면의 치수 단위는 <b>mm</b>이며, 단위 기호는 <b>붙이지 않습니다</b>.</div>`},
+    {h:'치수선 긋는 규칙', html:`
+      <div class="figbox">${figSpacing()}<div class="figcap">작은 치수는 안쪽, 큰 치수는 바깥쪽</div></div>
+      <ul>
+        <li>치수선은 외형선에서 <b>10mm 정도 띄워서</b> 긋는다</li>
+        <li>치수선끼리는 <b>같은 간격</b>으로 나란히 긋는다</li>
+        <li><b>작은 치수를 안쪽</b>, 큰 치수를 바깥쪽에 배치해 치수선이 교차하지 않게 한다</li>
+        <li>치수선은 서로 <b>교차시키지 않는다</b></li>
+      </ul>`},
+    {h:'치수 숫자 쓰는 방향', html:`
+      <ul>
+        <li><b>수평 방향</b> 치수: 도면의 <b>아래쪽</b>에서 읽을 수 있도록 기입</li>
+        <li><b>수직 방향</b> 치수: 도면의 <b>오른쪽</b>에서 읽을 수 있도록 기입</li>
+        <li>경사 방향도 위 두 원칙에 준해 기입한다</li>
+      </ul>
+      <div class="note">치수 숫자는 치수선과 <b>겹치지 않게</b> 하고, 다른 선이 치수 숫자를 지나가지 않도록 합니다.</div>`}
+  ]},
+  sym:{title:'치수 보조기호', cards:[
+    {h:'치수 보조기호 한눈에', html:`
+      <p>치수 숫자 <b>앞에</b> 붙여서 그 치수가 무엇을 뜻하는지 나타냅니다.</p>
+      <div class="symgrid">
+        ${SYMBOLS.map(s=>`<div class="sym"><div class="big">${s.s}</div>
+          <div class="nm">${s.nm}</div><div class="dt">${s.ex}</div></div>`).join('')}
+      </div>`},
+    {h:'φ와 R을 구분하기', html:`
+      <div class="figbox">${figSymbolUse()}<div class="figcap">완전한 원은 지름 φ, 원호는 반지름 R</div></div>
+      <div class="kv">
+        <b>φ (지름)</b><span>완전한 <b>원</b>일 때. 치수선이 원을 가로지름</span>
+        <b>R (반지름)</b><span><b>원호</b>(둥근 모서리 등)일 때. 중심에서 호까지 그음</span>
+      </div>
+      <div class="note">지름 기호 φ는 치수 숫자 앞에 씁니다. 원이 명확히 보이면 φ를 생략할 수도 있습니다.</div>`},
+    {h:'그 밖의 표시', html:`
+      <div class="kv">
+        <b>참고 치수</b><span>괄호로 묶음 — <b>(80)</b>. 계산이나 참고용이며 검사 대상이 아님</span>
+        <b>비례하지 않는 치수</b><span>치수 숫자에 <b>밑줄</b>을 긋는다</span>
+        <b>이론적으로 정확한 치수</b><span>치수를 <b>사각형으로 둘러싼다</b></span>
+        <b>같은 치수 반복</b><span><b>4-φ10</b> 처럼 '개수-기호치수'로 표시</span>
+      </div>
+      <div class="note"><b>4-φ10</b> = 지름 10mm 구멍이 4개 라는 뜻입니다.</div>`}
+  ]},
+  rule:{title:'치수 기입 원칙과 실수', cards:[
+    {h:'치수 기입의 기본 원칙', html:`
+      <ul>
+        <li>치수는 되도록 <b>주투상도(정면도)에 집중</b>해서 기입한다</li>
+        <li>완성된 물체의 <b>마무리 치수</b>를 기입한다</li>
+        <li>가공·조립할 때 <b>계산하지 않고</b> 바로 알 수 있도록 기입한다</li>
+        <li>필요한 치수는 <b>빠짐없이</b>, 그러나 <b>중복은 피한다</b></li>
+        <li>관련되는 치수는 <b>한곳에 모아서</b> 기입한다</li>
+      </ul>`},
+    {h:'자주 하는 실수 ① 중복 기입', html:`
+      <div class="figbox">${figDuplicate()}<div class="figcap">75 + 75 를 적고 다시 150을 적으면 중복</div></div>
+      <div class="bad-note">부분 치수를 모두 적었다면 전체 치수는 <b>참고 치수 (150)</b>로 하거나 생략합니다.
+      중복 기입은 수정할 때 값이 어긋나는 사고를 부릅니다.</div>`},
+    {h:'자주 하는 실수 ② 그 밖의 것들', html:`
+      <div class="kv">
+        <b>단위 붙이기</b><span>‘50mm’ ❌ → <b>50</b> ⭕ (도면 단위는 mm, 기호는 생략)</span>
+        <b>치수선 교차</b><span>큰 치수를 안쪽에 넣어 치수선이 겹치는 것 ❌</span>
+        <b>보조선 부족</b><span>치수 보조선이 치수선까지 못 미치거나 딱 맞게 끊김 ❌ → 2~3mm 넘기기</span>
+        <b>은선에 기입</b><span>숨은선(은선)에 치수를 기입하는 것은 <b>피한다</b></span>
+        <b>중심선에 기입</b><span>중심선·외형선을 치수선으로 <b>사용하지 않는다</b></span>
+      </div>`}
+  ]}
+};
+
+/* ---------- 문제 은행 ---------- */
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function keep(arr,ans){const u=[...new Set(arr)];if(!u.includes(ans))u.push(ans);return shuffle(u);}
+
+function bankElem(){
+  const Q=[];
+  Q.push({q:'도면에서 치수의 <b>단위</b>와 그 표시 방법으로 옳은 것은?',
+    opts:['mm이며 단위 기호는 붙이지 않는다','mm이며 반드시 mm를 붙인다',
+          'cm이며 단위 기호는 붙이지 않는다','m이며 반드시 m를 붙인다'],a:0,
+    ex:'도면의 치수 단위는 <b>mm</b>이고, 단위 기호는 <b>기입하지 않습니다</b>.'});
+  Q.push({q:'<b>치수 보조선</b>은 치수선을 얼마나 넘게 그리는가?',
+    opts:['2~3mm 정도 넘게','치수선에 정확히 맞춰서','10mm 넘게','넘지 않고 짧게'],a:0,
+    ex:'치수 보조선은 치수선을 <b>2~3mm 정도 넘게</b> 그립니다.'});
+  Q.push({q:'치수선은 물체의 외형선에서 대략 얼마나 띄워 긋는가?',
+    opts:['10mm 정도','1mm 정도','30mm 정도','띄우지 않고 붙여서'],a:0,
+    ex:'치수선은 외형선에서 <b>10mm 정도</b> 띄우고, 치수선끼리는 같은 간격으로 긋습니다.'});
+  Q.push({q:'치수선을 여러 개 그을 때 배치 원칙으로 옳은 것은?',
+    opts:['작은 치수를 안쪽, 큰 치수를 바깥쪽에','큰 치수를 안쪽, 작은 치수를 바깥쪽에',
+          '순서에 관계없다','모두 같은 선 위에 겹쳐 긋는다'],a:0,
+    ex:'<b>작은 치수를 안쪽</b>에 두어야 치수선이 교차하지 않습니다.'});
+  Q.push({q:'<b>수평 방향</b> 치수 숫자는 어느 쪽에서 읽을 수 있도록 기입하는가?',
+    opts:['도면의 아래쪽','도면의 위쪽','도면의 왼쪽','도면의 오른쪽'],a:0,
+    ex:'수평 치수는 <b>아래쪽</b>에서, 수직 치수는 <b>오른쪽</b>에서 읽을 수 있게 기입합니다.'});
+  Q.push({q:'<b>수직 방향</b> 치수 숫자는 어느 쪽에서 읽을 수 있도록 기입하는가?',
+    opts:['도면의 오른쪽','도면의 왼쪽','도면의 아래쪽','도면의 위쪽'],a:0,
+    ex:'수직 치수는 <b>오른쪽</b>에서 읽을 수 있도록 기입합니다.'});
+  Q.push({q:'치수 숫자는 치수선의 어디에 기입하는가?',
+    opts:['치수선 중앙의 위쪽','치수선 중앙의 아래쪽','치수선 왼쪽 끝','치수 보조선 위'],a:0,
+    ex:'치수 숫자는 <b>치수선 중앙 위쪽</b>에, 치수선과 겹치지 않게 기입합니다.'});
+  Q.push({q:'치수 기입의 4가지 요소가 <b>아닌</b> 것은?',
+    opts:['해칭선','치수선','치수 보조선','화살표'],a:0,
+    ex:'치수 기입 요소는 <b>치수선·치수 보조선·화살표·치수 숫자</b>입니다. 해칭선은 단면 표시용입니다.'});
+  Q.push({q:'한 도면 안에서 <b>화살표</b>의 모양과 크기는?',
+    opts:['모두 같게 그린다','치수마다 다르게 그린다','큰 치수일수록 크게 그린다','자유롭게 그린다'],a:0,
+    ex:'한 도면에서 화살표는 <b>모양과 크기를 통일</b>합니다.'});
+  return Q;
+}
+function bankSym(){
+  const Q=[];
+  SYMBOLS.forEach(s=>{
+    Q.push({q:`치수 보조기호 <b style="font-size:20px;color:var(--dim)">${s.s}</b> 는 무엇을 나타내는가?`,
+      opts:keep([s.nm,...shuffle(SYMBOLS.filter(x=>x!==s).map(x=>x.nm)).slice(0,3)],s.nm),a:-1,ansText:s.nm,
+      ex:`<b>${s.s}</b> = ${s.nm} — ${s.dt}<br>예) ${s.ex}`});
+  });
+  Q.push({q:'<b>φ50</b> 이 뜻하는 것은?',
+    opts:['지름이 50mm','반지름이 50mm','한 변이 50mm','두께가 50mm'],a:0,
+    ex:'φ는 <b>지름</b>을 뜻하므로 φ50 = 지름 50mm입니다.'});
+  Q.push({q:'<b>R20</b> 이 뜻하는 것은?',
+    opts:['반지름이 20mm','지름이 20mm','구의 반지름이 20mm','모따기 20mm'],a:0,
+    ex:'R은 <b>반지름</b>입니다. 구의 반지름은 SR로 구분합니다.'});
+  Q.push({q:'<b>C2</b> 가 뜻하는 것은?',
+    opts:['45°로 2mm 모따기','반지름 2mm 둥글리기','두께 2mm','구멍 2개'],a:0,
+    ex:'C는 <b>45° 모따기(chamfer)</b>를 뜻합니다. C2 = 45°로 2mm 모따기.'});
+  Q.push({q:'<b>t3</b> 이 뜻하는 것은?',
+    opts:['두께 3mm','지름 3mm','3개','반지름 3mm'],a:0,
+    ex:'t는 <b>두께(thickness)</b>입니다. 주로 판재 도면에 사용합니다.'});
+  Q.push({q:'<b>4-φ10</b> 이 뜻하는 것은?',
+    opts:['지름 10mm 구멍이 4개','지름 40mm 구멍 1개','반지름 10mm 구멍 4개','두께 4mm에 지름 10mm'],a:0,
+    ex:'‘개수-기호치수’ 형식으로, <b>지름 10mm 구멍 4개</b>를 뜻합니다.'});
+  Q.push({q:'괄호로 묶은 치수 <b>(80)</b> 은 무엇인가?',
+    opts:['참고 치수','이론적으로 정확한 치수','비례하지 않는 치수','최대 허용 치수'],a:0,
+    ex:'괄호는 <b>참고 치수</b>입니다. 검사 대상이 아니며 참고용으로만 표시합니다.'});
+  Q.push({q:'치수 숫자에 <b>밑줄</b>이 그어져 있으면?',
+    opts:['비례하지 않는 치수','참고 치수','이론적으로 정확한 치수','중요한 치수'],a:0,
+    ex:'그림과 비례하지 않게 그려진 치수에는 <b>밑줄</b>을 긋습니다.'});
+  Q.push({q:'치수를 <b>사각형으로 둘러싼</b> 표시의 뜻은?',
+    opts:['이론적으로 정확한 치수','참고 치수','비례하지 않는 치수','생략된 치수'],a:0,
+    ex:'사각형으로 둘러싼 치수는 <b>이론적으로 정확한 치수</b>를 뜻합니다.'});
+  Q.push({q:'구(공) 모양의 <b>지름</b>을 나타내는 기호는?',
+    opts:['Sφ','SR','φ','R'],a:0,
+    ex:'구의 지름은 <b>Sφ</b>, 구의 반지름은 <b>SR</b>입니다.'});
+  return Q;
+}
+function bankRule(){
+  const Q=[];
+  Q.push({q:'치수는 원칙적으로 어느 투상도에 모아서 기입하는가?',
+    opts:['주투상도(정면도)','평면도','측면도','모든 투상도에 고르게'],a:0,
+    ex:'치수는 되도록 <b>주투상도(정면도)에 집중</b>해서 기입합니다.'});
+  Q.push({q:'치수 기입 원칙으로 <b>옳지 않은</b> 것은?',
+    opts:['같은 치수를 여러 곳에 반복해서 기입한다','필요한 치수는 빠짐없이 기입한다',
+          '계산하지 않고 알 수 있게 기입한다','관련 치수는 한곳에 모아 기입한다'],a:0,
+    ex:'치수의 <b>중복 기입은 피해야</b> 합니다. 수정 시 값이 어긋나 사고로 이어집니다.'});
+  Q.push({q:'부분 치수를 모두 기입한 뒤 전체 치수도 넣고 싶을 때 올바른 방법은?',
+    opts:['전체 치수를 참고 치수 ( )로 표시한다','전체 치수를 굵게 표시한다',
+          '전체 치수와 부분 치수를 모두 그대로 둔다','부분 치수를 지운다'],a:0,
+    ex:'중복을 피하기 위해 전체 치수는 <b>참고 치수 (150)</b> 형태로 기입합니다.'});
+  Q.push({q:'치수를 기입할 때 <b>피해야 할</b> 선은?',
+    opts:['숨은선(은선)','외형선','중심선','가상선'],a:0,
+    ex:'숨은선에는 치수 기입을 <b>피합니다</b>. 필요하면 단면도로 보이게 한 뒤 기입합니다.'});
+  Q.push({q:'중심선이나 외형선을 치수선으로 사용해도 되는가?',
+    opts:['사용하지 않는다','자유롭게 사용한다','중심선만 사용한다','외형선만 사용한다'],a:0,
+    ex:'중심선·외형선을 <b>치수선으로 사용하지 않습니다</b>. 치수선은 별도의 가는 실선으로 긋습니다.'});
+  Q.push({q:'도면에 기입하는 치수는 어떤 상태의 치수인가?',
+    opts:['완성된 물체의 마무리 치수','가공 전 소재 치수','가공 중간 단계 치수','설계자가 예상한 치수'],a:0,
+    ex:'도면에는 <b>완성된 물체의 마무리 치수</b>를 기입합니다.'});
+  Q.push({q:'치수선이 서로 <b>교차</b>하는 것을 막으려면?',
+    opts:['작은 치수를 안쪽에 배치한다','치수선을 굵게 그린다',
+          '치수를 생략한다','치수 숫자를 작게 쓴다'],a:0,
+    ex:'<b>작은 치수를 안쪽</b>, 큰 치수를 바깥쪽에 두면 교차를 피할 수 있습니다.'});
+  Q.push({q:'‘50mm’ 라고 기입한 것의 문제점은?',
+    opts:['단위 기호를 붙이면 안 된다','숫자가 너무 크다',
+          '치수선 아래에 써야 한다','괄호를 빠뜨렸다'],a:0,
+    ex:'도면 단위는 mm로 약속되어 있으므로 <b>단위 기호를 생략</b>하고 <b>50</b>이라고만 씁니다.'});
+  Q.push({q:'가공·조립하는 사람이 <b>계산을 해야만</b> 알 수 있게 치수를 기입하면?',
+    opts:['잘못된 기입이다 — 바로 알 수 있게 해야 한다','괜찮다 — 도면이 간단해진다',
+          '숙련자에게는 문제없다','계산식을 함께 적으면 된다'],a:0,
+    ex:'치수는 <b>계산하지 않고 바로 알 수 있도록</b> 기입해야 합니다.'});
+  return Q;
+}
+const BANK={elem:bankElem,sym:bankSym,rule:bankRule};
+const AREA={
+  elem:{ico:'📐',name:'치수 기입의 요소',desc:'치수선·보조선·화살표·치수 숫자, 긋는 규칙과 방향'},
+  sym: {ico:'🔤',name:'치수 보조기호',desc:'φ R □ t C SR Sφ ( ) — 기호가 뜻하는 것'},
+  rule:{ico:'✅',name:'기입 원칙과 실수',desc:'집중·중복금지 원칙, 자주 하는 실수 바로잡기'}
+};
+
+/* ---------- 상태 ---------- */
+let S={view:'home',area:null,qs:[],idx:0,score:0,wrong:[],answered:false,
+       mode:'area',best:{},examBest:null,startAt:Date.now()};
+try{const sv=JSON.parse(localStorage.getItem('dimmaster')||'{}');
+    S.best=sv.best||{};S.examBest=sv.examBest||null;}catch(e){}
+function save(){try{localStorage.setItem('dimmaster',JSON.stringify({best:S.best,examBest:S.examBest}));}catch(e){}}
+
+function renderHome(){
+  const g=document.getElementById('homeGrid');g.innerHTML='';
+  Object.entries(AREA).forEach(([k,a])=>{
+    const b=S.best[k];
+    const el=document.createElement('button');el.className='card';
+    el.innerHTML=`<div class="ico">${a.ico}</div><h3>${a.name}</h3><p>${a.desc}</p>
+      <div class="bar"><i style="width:${b?b.pct:0}%"></i></div>
+      <div class="bar-t">${b?`최고 기록 ${b.correct}/${b.total} (${b.pct}%)`:'아직 풀지 않았습니다 — 먼저 배우기부터'}</div>`;
+    el.onclick=()=>openLearn(k);
+    g.appendChild(el);
+  });
+  const eb=S.examBest;
+  document.getElementById('examBar').style.width=(eb?eb.pct:0)+'%';
+  document.getElementById('examTxt').textContent=eb?`최고 기록 ${eb.correct}/${eb.total} (${eb.pct}%)`:'아직 응시하지 않았습니다';
+}
+function show(v){['home','learnView','quizView','resultView'].forEach(id=>
+  document.getElementById(id).classList.toggle('hidden',id!==v));window.scrollTo(0,0);}
+function goHome(){renderHome();show('home');}
+function openLearn(area){
+  S.area=area;const L=LEARN[area];
+  document.getElementById('learnTitle').textContent='📖 배우기 — '+L.title;
+  document.getElementById('learnBody').innerHTML=L.cards.map(c=>`<div class="lcard"><h4>${c.h}</h4>${c.html}</div>`).join('');
+  show('learnView');
+}
+function fromLearnToQuiz(){startQuiz(S.area);}
+function startQuiz(area){
+  S.mode='area';S.area=area;
+  S.qs=shuffle(BANK[area]()).slice(0,12);
+  S.idx=0;S.score=0;S.wrong=[];S.startAt=Date.now();
+  document.getElementById('quizTitle').textContent=AREA[area].ico+' '+AREA[area].name;
+  show('quizView');renderQ();
+}
+function startExam(){
+  S.mode='exam';S.area=null;
+  S.qs=shuffle([].concat(shuffle(bankElem()).slice(0,7),shuffle(bankSym()).slice(0,7),shuffle(bankRule()).slice(0,6)));
+  S.idx=0;S.score=0;S.wrong=[];S.startAt=Date.now();
+  document.getElementById('quizTitle').textContent='🏁 종합 점검 (20문항)';
+  show('quizView');renderQ();
+}
+function renderQ(){
+  const q=S.qs[S.idx];S.answered=false;
+  document.getElementById('quizCount').textContent=`문제 ${S.idx+1} / ${S.qs.length}`;
+  document.getElementById('quizProg').style.width=(S.idx/S.qs.length*100)+'%';
+  document.getElementById('quizScore').textContent=S.score+'점';
+  document.getElementById('nextBtn').classList.add('hidden');
+  const ansText=q.ansText!=null?q.ansText:q.opts[q.a];
+  document.getElementById('quizBody').innerHTML=
+    `<div class="qtext">${q.q}</div>${q.fig?`<div class="figbox">${q.fig}</div>`:''}
+     <div class="opts" id="opts"></div><div class="fb" id="fb"></div>`;
+  const wrap=document.getElementById('opts');
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML=`<span class="mk">${String.fromCharCode(65+i)}</span><span>${o}</span>`;
+    b.onclick=()=>answer(i,o===ansText,ansText,q);
+    wrap.appendChild(b);
+  });
+}
+function answer(i,correct,ansText,q){
+  if(S.answered)return;S.answered=true;
+  [...document.querySelectorAll('#opts .opt')].forEach((b,bi)=>{
+    b.disabled=true;
+    const txt=b.querySelector('span:last-child').textContent;
+    if(txt===ansText)b.classList.add('ok');else if(bi===i)b.classList.add('no');
+  });
+  const fb=document.getElementById('fb');
+  if(correct){S.score++;fb.className='fb ok';fb.innerHTML='✅ <b>정답!</b><br>'+q.ex;toast('정답!','ok');}
+  else{S.wrong.push({q:q.q.replace(/<[^>]+>/g,''),ans:ansText});
+       fb.className='fb no';fb.innerHTML=`❌ <b>정답은 «${ansText}»</b><br>`+q.ex;toast('아쉬워요','no');}
+  document.getElementById('quizScore').textContent=S.score+'점';
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+document.getElementById('nextBtn').onclick=()=>{S.idx++;if(S.idx>=S.qs.length)finish();else renderQ();};
+function finish(){
+  const total=S.qs.length,pct=Math.round(S.score/total*100),pass=pct>=70;
+  document.getElementById('rEmoji').textContent=pct>=90?'🏆':pass?'🎉':'💪';
+  document.getElementById('rTitle').textContent=pct>=90?'훌륭해요! 완벽에 가까워요':pass?'합격! 잘 이해했어요':'조금만 더 연습해요';
+  document.getElementById('rScore').textContent=`${S.score} / ${total} (${pct}%)`;
+  const sec=Math.round((Date.now()-S.startAt)/1000);
+  document.getElementById('rSub').textContent=
+    `${S.mode==='exam'?'종합 점검':AREA[S.area].name} · 소요 시간 ${Math.floor(sec/60)}분 ${sec%60}초`;
+  document.getElementById('rWrong').innerHTML=S.wrong.length
+    ?`<div class="wrongbox"><h4>틀린 문제 ${S.wrong.length}개 — 다시 확인하세요</h4>
+      ${S.wrong.map(w=>`<div>• ${w.q}<br><span style="color:var(--good)">→ 정답: ${w.ans}</span></div>`).join('')}</div>`
+    :`<div class="wrongbox" style="color:var(--good)">틀린 문제가 없습니다! 완벽해요 🎯</div>`;
+  const rec={correct:S.score,total:total,pct:pct};
+  if(S.mode==='exam'){if(!S.examBest||pct>S.examBest.pct)S.examBest=rec;}
+  else{if(!S.best[S.area]||pct>S.best[S.area].pct)S.best[S.area]=rec;}
+  save();
+  document.getElementById('rcSubmitBtn').classList.toggle('hidden',!(S.mode==='exam'&&rcHasEndpoint()));
+  document.getElementById('retryBtn').onclick=()=>S.mode==='exam'?startExam():startQuiz(S.area);
+  show('resultView');
+}
+let tTimer=null;
+function toast(msg,kind){
+  const t=document.getElementById('toast');clearTimeout(tTimer);
+  t.className='toast '+(kind||'');t.textContent=msg;t.style.display='block';
+  tTimer=setTimeout(()=>{t.style.display='none';},1100);
+}
+function rcHasEndpoint(){return !!(window.ResultCollector&&ResultCollector.config&&ResultCollector.config.endpoint);}
+function rcSubmit(){
+  if(!rcHasEndpoint()){alert('결과 제출 링크로 접속했을 때만 제출할 수 있어요. (선생님이 나눠준 링크를 사용하세요)');return;}
+  const total=S.qs.length,sec=Math.round((Date.now()-S.startAt)/1000);
+  ResultCollector.open({score:Math.round(S.score/total*100),correct:S.score,total:total,
+    wrong:S.wrong.map(w=>`${w.q} → 정답: ${w.ans}`),durationSec:sec});
+}
+renderHome();show('home');
+</script>
+<script src="https://hongyul67-cpu.github.io/links/collector.js" data-tool="치수기입 마스터" data-max-num="40"></script>
+</body>
+</html>
