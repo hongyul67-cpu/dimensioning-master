@@ -558,6 +558,8 @@ function renderQ(){
   document.getElementById('quizScore').textContent=isExam()?'채점은 마지막에':S.score+'점';
   document.getElementById('nextBtn').classList.add('hidden');
   const ansText=q.ansText!=null?q.ansText:q.opts[q.a];
+  // 보기 순서를 섞는다 — 안 섞으면 손으로 적은 문항은 정답이 늘 A라서 그냥 A만 눌러도 맞는다
+  if(!q._shuffled){ q.opts=shuffle(q.opts); q._shuffled=true; }
   document.getElementById('quizBody').innerHTML=
     `<div class="qtext">${q.q}</div>${q.fig?`<div class="figbox">${q.fig}</div>`:''}
      <div class="opts" id="opts"></div><div class="fb" id="fb"></div>`;
